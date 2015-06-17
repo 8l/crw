@@ -186,9 +186,7 @@ public:
         string result = "typedef struct {\n";
         foreach (i; 0 .. members.length) {
             result ~= members[i][0] ~ " " ~ members[i][1];
-            if (i != members.length - 1) {
-                result ~= ";\n";
-            }
+            result ~= ";\n";
         }
         result ~= "\n} " ~ name ~ ";\n";
         return result;

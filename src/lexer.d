@@ -42,12 +42,45 @@ public:
         tokens ~= new Token(source_file[initial_pos .. position], type);
     }
 
+    void recognize_operator() {
+        consume();
+        push_token(TOKEN_OPERATOR);
+    }
+
+    void recognize_separator() {
+        consume();
+        push_token(TOKEN_SEPARATOR);
+    }
+
     void recognize_identifier() {
         while (is_identifier(current_char)) {
             consume();
         }
 
         push_token(TOKEN_IDENTIFIER);
+    }
+
+    void recognize_character() {
+        consume(); // eat opening tick
+
+        while (current_char != '\'') {
+            consume();
+        }
+        consume(); // eat closing tick
+
+        push_token(TOKEN_CHARACTER);
+    }
+
+    void recognize_string() {
+        consume(); // eat opening quote
+
+        while (current_char != '\"') {
+            consume();
+        }
+
+        consume(); // eat closing quote
+
+        push_token(TOKEN_STRING);
     }
 
     void recognize_digit() {
@@ -80,6 +113,31 @@ public:
         else if (is_digit(current_char)) {
             recognize_digit();
         }
+        else {
+            switch (current_char) {
+                case '-': case '+': case '>': case '<':
+                case '*': case '/':
+                case '~': case '&': case '%': case '#':
+                case '$': case '^': case '!': case '.':
+                case ',': case '?': case '@': case ';':
+                case ':': case '=': case '\\': case '_':
+                    recognize_operator();
+                    break;
+                case '[': case ']': case '(': case ')':
+                case '{': case '}': case '|':
+                    recognize_separator();
+                    break;
+                default:
+                    writeln("error: invalid character found ", current_char);
+                    break;
+                case '\'':
+                    recognize_character();
+                    break;
+                case '\"':
+                    recognize_string();
+                    break;
+            }
+        }
     }
 
     void start() {
@@ -106,5 +164,9 @@ public:
 
     bool is_identifier(char c) {
         return is_letter_or_digit(c) || c == '_';
+    }
+
+    Token[] get_tokens() {
+        return tokens;
     }
 }

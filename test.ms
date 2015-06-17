@@ -1,1 +1,18 @@
-this is a test 1232341234123412344444445.123
+var test;
+
+func add -> a, b, c {
+    ret a + b + c;
+}
+
+func print -> a {
+    #foreign printf "%d\n", a;
+}
+
+func no_args {
+    print "no args";
+}
+
+func main {
+    add 1, 2, 3 -> print;
+    no_args _;
+}

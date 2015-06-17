@@ -1,6 +1,8 @@
 import std.stdio;
 import std.string;
+
 import lexer;
+import parser;
 
 string read_file(string file_name) {
     string source_file = "";
@@ -20,6 +22,9 @@ int main(string[] args) {
 
     auto lexer = new Lexer(read_file(args[1]));
     lexer.start();
+
+    auto parser = new Parser(lexer.get_tokens());
+    parser.start();
 
     return 0;
 }

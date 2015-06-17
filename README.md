@@ -4,15 +4,15 @@ a tiny little compiler I'm writing to learn D...
 ## example
 here's an example...
 
-    var test;
-    var another = test;
-    var swag = 5 + 5;
+    int test;
+    int another = test;
+    int swag = 5 + 5;
 
-    func add -> a, b, c {
+    func add -> int a, int b, int c {
         ret a + b + c;
     }
 
-    func print -> a {
+    func print -> int a {
         #foreign printf "%d\n", a;
     }
 
@@ -20,7 +20,7 @@ here's an example...
         print "no args";
     }
 
-    func main {
+    func main [int] {
         add 1, 2, 3 -> print;
         no_args _;
     }

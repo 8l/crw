@@ -8,12 +8,41 @@ class Parser {
 private:
     Token[] tokens;
     Node[] nodes;
+    int[string] precedence;
     int position;
 
 public:
     this(Token[] tokens) {
         this.tokens = tokens;
         this.position = 0;
+
+        precedence["++"] = 11;
+        precedence["--"] = 11;
+        precedence["!"] = 11;
+        precedence["~"] = 11;
+
+        precedence["."] = 10;
+
+        precedence["*"] = 9;
+        precedence["/"] = 9;
+        precedence["%"] = 9;
+
+        precedence["+"] = 8;
+        precedence["-"] = 8;
+
+        precedence[">"] = 7;
+        precedence["<"] = 7;
+        precedence[">="] = 7;
+        precedence["<="] = 7;
+
+        precedence["=="] = 6;
+        precedence["!="] = 6;
+
+        precedence["&"] = 5;
+        precedence["|"] = 4;
+        precedence["&&"] = 3;
+        precedence["||"] = 2;
+        precedence["="] = 1;
     }
 
     Var parse_var() {
@@ -25,8 +54,15 @@ public:
 
                 Var v = new Var(name);
 
-                if (match_content("=", 1)) {
-                    writeln("todo var assignment!");
+                if (match_content("=", 0)) {
+                    consume();
+
+                    Expr expr = parse_expr();
+                    if (expr !is null) {
+                        v.set_value(expr);
+                    } else {
+                        writeln("expected expression after assignment operator for `", name, "`");
+                    }
                 }
 
                 if (match_content(";", 0)) {
@@ -59,6 +95,94 @@ public:
         }
 
         return params;
+    }
+
+    Expr parse_expr() {
+        Expr expr = parse_primary_expr();
+        if (expr is null) {
+            return null;
+        }
+
+        return parse_binary_op(0, expr);
+    }
+
+    UnaryExpr parse_unary() {
+        if (is_unary_op(peek(0).get_content())) {
+            string op = consume().get_content();
+            Expr rhand = parse_primary_expr();
+            if (rhand !is null) {
+                return new UnaryExpr(op, rhand);
+            }
+        }
+
+        return null;
+    }
+
+    LiteralExpr parse_literal() {
+        int type = match_literal(0);
+        if (type == -1) {
+            return null;
+        }
+
+        return new LiteralExpr(consume().get_content(), type);
+    }
+
+    Expr parse_primary_expr() {
+        UnaryExpr unary = parse_unary();
+        if (unary !is null) {
+            return unary;
+        }
+
+        LiteralExpr literal = parse_literal();
+        if (literal !is null) {
+            return literal;
+        }
+
+        return null;        
+    }
+
+    int get_token_prec() {
+        Token tok = peek(0);
+
+        if (!is_binary_op(tok.get_content())) {
+            return -1;
+        }
+
+        int prec = precedence[tok.get_content()];
+        if (prec <= 0) {
+            return -1;
+        }
+        return prec;
+    }
+
+    Expr parse_binary_op(int prec, Expr lhand) {
+        while (true) {
+            int tok_prec = get_token_prec();
+            if (tok_prec < prec) return lhand;
+
+            if (!is_binary_op(peek(0).get_content())) {
+                writeln("error: invalid binary op in expression `", peek(0).get_content(), "`");
+                return null;
+            }
+            string operator = consume().get_content();
+
+            Expr rhand = parse_expr();
+            if (rhand is null) {
+                return null;
+            }
+
+            int next_prec = get_token_prec();
+            if (tok_prec < next_prec) {
+                rhand = parse_binary_op(tok_prec + 1, rhand);
+                if (rhand is null) {
+                    return null;
+                }
+            }
+
+            lhand = new BinaryExpr(lhand, operator, rhand);
+        }
+
+        return null;
     }
 
     Func parse_func() {
@@ -127,6 +251,14 @@ public:
         return null;
     }
 
+    Token peek(int offset) {
+        if (position + offset > tokens.length) {
+            writeln("attempting to peek out of bounds %d", position + offset);
+            return null;
+        }
+        return this.tokens[position + offset];
+    }
+
     Token consume() {
         return this.tokens[position++];
     }
@@ -148,6 +280,37 @@ public:
         }
         foreach (i; 0 .. nodes.length) {
             writeln(nodes[i].to_string());
+        }
+    }
+
+    int match_literal(int offset) {
+        int lit = tokens[position + offset].get_type();
+        switch (lit) {
+            case LITERAL_CHAR:
+            case LITERAL_INT:
+            case LITERAL_FLOAT:
+            case LITERAL_STRING:
+                return lit;
+            default:
+                return -1;
+        }
+    }
+
+    bool is_unary_op(string op) {
+        switch (op) {
+            case "+": case "-": case "/": case "*":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool is_binary_op(string op) {
+        switch (op) {
+            case "+": case "-": case "/": case "*":
+                return true;
+            default:
+                return false;
         }
     }
 }

@@ -1,3 +1,10 @@
+enum {
+    LITERAL_STRING,
+    LITERAL_CHAR,
+    LITERAL_INT,
+    LITERAL_FLOAT
+}
+
 class Node {
 public:
     string to_string() {
@@ -5,20 +12,97 @@ public:
     }
 }
 
-class Expr : Node {
+class UnaryExpr : Expr {
 private:
-    string left;
-    char op;
-    string right;
+    Expr rhand;
+    string op;
 public:
-    this(string left, char op, string right) {
-        this.left = left;
+    this(string op, Expr rhand) {
         this.op = op;
-        this.right = right;
+        this.rhand = rhand;
+    }
+
+    Expr get_rhand() {
+        return rhand;
+    }
+
+    string get_op() {
+        return op;
     }
 
     override string to_string() {
-        return left ~ " " ~ op ~ " " ~ right;
+        return rhand.to_string() ~ " " ~ op;
+    }
+}
+
+class BinaryExpr : Expr {
+private:
+    Expr lhand;
+    string op;
+    Expr rhand;
+
+public:
+    this(Expr lhand, string op, Expr rhand) {
+        this.lhand = lhand;
+        this.op = op;
+        this.rhand = rhand;
+    }
+
+    Expr get_lhand() {
+        return lhand;
+    }
+
+    string get_op() {
+        return op;
+    }
+
+    Expr get_rhand() {
+        return rhand;
+    }
+
+    override string to_string() {
+        return lhand.to_string() ~ " " ~ op ~ " " ~ rhand.to_string();
+    }
+}
+
+class LiteralExpr : Expr {
+private:
+    string value;
+    int type;
+
+public:
+    this(string value, int type) {
+        this.value = value;
+        this.type = type;
+    }
+
+    string get_value() {
+        return value;
+    }
+
+    int get_type() {
+        return type;
+    }
+
+    string get_type_str() {
+        switch (type) {
+            case LITERAL_STRING: return "string";
+            case LITERAL_CHAR: return "char";
+            case LITERAL_FLOAT: return "float";
+            case LITERAL_INT: return "int";
+            default: return "??";
+        }
+    }
+
+    override string to_string() {
+        return "(literal: " ~ value ~ " [" ~ get_type_str() ~ "])";
+    }
+}
+
+class Expr : Node {
+public:
+    override string to_string() {
+        return "";
     }
 }
 
@@ -30,6 +114,10 @@ private:
 public:
     this(string name) {
         this.name = name;
+    }
+
+    void set_value(Expr value) {
+        this.value = value;
     }
 
     override string to_string() {

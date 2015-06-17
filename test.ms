@@ -1,4 +1,6 @@
 var test;
+var another = test;
+var swag = 5 + 5;
 
 func add -> a, b, c {
     ret a + b + c;

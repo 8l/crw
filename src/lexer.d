@@ -28,18 +28,19 @@ public:
     }
 
     void consume() {
-        if (position >= source_file.length - 1) {
-            running = false;
+        if (position + 1>= source_file.length) {
+            position++;
             current_char = '\0';
             return;
         }
-        this.current_char = source_file[++position];
+        current_char = source_file[++position];
     }
 
     void recognize_identifier() {
         while (is_identifier(current_char)) {
             consume();
         }
+        writeln("recognized identifier {", source_file[initial_pos .. position], "}");
     }
 
     void recognize_digit() {
@@ -52,6 +53,7 @@ public:
                 consume();
             }
         }
+        writeln("recognized digit {", source_file[initial_pos .. position], "}");
     }
 
     void get_next_token() {
@@ -59,12 +61,14 @@ public:
         initial_pos = position;
 
         if (current_char == '\0') {
-            // do nothing
+            running = false;
             return;
         }
-        else if (is_identifier(current_char)) {
+        // identifiers must start with a letter
+        else if (is_letter(current_char)) {
             recognize_identifier();
         }
+        // digits must start with a digit..
         else if (is_digit(current_char)) {
             recognize_digit();
         }

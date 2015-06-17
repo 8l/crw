@@ -1,6 +1,7 @@
 module lexer;
 
 import std.stdio;
+import token;
 
 class Lexer {
 private:
@@ -9,6 +10,7 @@ private:
     int initial_pos;
     char current_char;
     bool running;
+    Token[] tokens;
 
 public:
     this(string source_file) {
@@ -36,11 +38,16 @@ public:
         current_char = source_file[++position];
     }
 
+    void push_token(int type) {
+        tokens ~= new Token(source_file[initial_pos .. position], type);
+    }
+
     void recognize_identifier() {
         while (is_identifier(current_char)) {
             consume();
         }
-        writeln("recognized identifier {", source_file[initial_pos .. position], "}");
+
+        push_token(TOKEN_IDENTIFIER);
     }
 
     void recognize_digit() {
@@ -53,7 +60,8 @@ public:
                 consume();
             }
         }
-        writeln("recognized digit {", source_file[initial_pos .. position], "}");
+
+        push_token(TOKEN_NUMBER);
     }
 
     void get_next_token() {
@@ -77,6 +85,10 @@ public:
     void start() {
         while (running) {
             get_next_token();
+        }
+
+        foreach (token; 0 .. tokens.length) {
+            writeln(tokens[token].to_string());
         }
     }
 

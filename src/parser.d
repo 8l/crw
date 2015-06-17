@@ -1,6 +1,8 @@
 module parser;
 
 import std.stdio;
+import std.typecons;
+
 import ast;
 import token;
 
@@ -9,12 +11,20 @@ private:
     Token[] tokens;
     Node[] nodes;
     int[string] precedence;
+    bool[string] types;
     int position;
 
 public:
     this(Token[] tokens) {
         this.tokens = tokens;
         this.position = 0;
+
+        types["int"] = true;
+        types["double"] = true;
+        types["float"] = true;
+        types["string"] = true;
+        types["char"] = true;
+        types["void"] = true;
 
         precedence["++"] = 11;
         precedence["--"] = 11;
@@ -46,13 +56,13 @@ public:
     }
 
     Var parse_var() {
-        if (match_content("var", 0)) {
-            consume();
+        if (peek(0).get_content() in types) {
+            string type = consume().get_content();
 
             if (match_type(TOKEN_IDENTIFIER, 0)) {
                 string name = consume().get_content();
 
-                Var v = new Var(name);
+                Var v = new Var(name, type);
 
                 if (match_content("=", 0)) {
                     consume();
@@ -78,18 +88,23 @@ public:
         return null;
     }
 
-    string[] parse_parameters() {
-        string[] params;
+    Tuple!(string, string)[] parse_parameters() {
+        Tuple!(string, string)[] params;
 
         while (true) {
-            if (match_type(TOKEN_IDENTIFIER, 0)) {
-                string res = consume().get_content();
-                params ~= res;
+            if (match_type(TOKEN_IDENTIFIER, 0) && peek(0).get_content() in types) {
+                string type = consume().get_content();
 
-                if (match_content(",", 0)) {
-                    consume();
-                } else {
-                    break;
+                if (match_type(TOKEN_IDENTIFIER, 0)) {
+                    string name = consume().get_content();
+
+                    params ~= tuple(type, name);
+
+                    if (match_content(",", 0)) {
+                        consume();
+                    } else {
+                        break;
+                    }
                 }
             }
         }
@@ -198,8 +213,21 @@ public:
                     consume(); // eat -
                     consume(); // eat >
 
-                    string[] params = parse_parameters();
+                    Tuple!(string, string)[] params = parse_parameters();
                     f.set_params(params);
+                }
+
+                if (match_content("[", 0)) {
+                    consume();
+
+                    if (peek(0).get_content() in types) {
+                        string type = consume().get_content();
+                        f.set_type(type);
+
+                        if (match_content("]", 0)) {
+                            consume();
+                        }
+                    }
                 }
 
                 // block
@@ -281,6 +309,10 @@ public:
         foreach (i; 0 .. nodes.length) {
             writeln(nodes[i].to_string());
         }
+    }
+
+    Node[] get_ast() {
+        return nodes;
     }
 
     int match_literal(int offset) {

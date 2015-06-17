@@ -5,9 +5,16 @@ enum {
     LITERAL_FLOAT
 }
 
+import std.stdio;
+import std.typecons;
+
 class Node {
 public:
     string to_string() {
+        return "";
+    }
+
+    string codegen() {
         return "";
     }
 }
@@ -28,6 +35,10 @@ public:
 
     string get_op() {
         return op;
+    }
+
+    override string codegen() {
+        return rhand.to_string() ~ " " ~ op;
     }
 
     override string to_string() {
@@ -58,6 +69,10 @@ public:
 
     Expr get_rhand() {
         return rhand;
+    }
+
+    override string codegen() {
+        return lhand.codegen() ~ " " ~ op ~ " " ~ rhand.codegen();
     }
 
     override string to_string() {
@@ -94,6 +109,10 @@ public:
         }
     }
 
+    override string codegen() {
+        return value;
+    }
+
     override string to_string() {
         return "(literal: " ~ value ~ " [" ~ get_type_str() ~ "])";
     }
@@ -101,6 +120,10 @@ public:
 
 class Expr : Node {
 public:
+    override string codegen() {
+        return "";
+    }
+
     override string to_string() {
         return "";
     }
@@ -109,15 +132,26 @@ public:
 class Var : Node {
 private:
     string name;
+    string type;
     Expr value;
 
 public:
-    this(string name) {
+    this(string name, string type) {
         this.name = name;
+        this.type = type;
     }
 
     void set_value(Expr value) {
         this.value = value;
+    }
+
+    override string codegen() {
+        string res = type ~ " " ~ name;
+        if (value !is null) {
+            res ~= " = " ~ value.codegen();
+        }
+        res ~= ";\n";
+        return res;
     }
 
     override string to_string() {
@@ -132,14 +166,16 @@ public:
 class Func : Node {
 private:
     string name;
-    string[] params;
+    Tuple!(string, string)[] params;
     Node[] nodes;
     bool prototype;
+    string type;
 
 public:
     this(string name) {
         this.name = name;
         this.prototype = false;
+        this.type = "void";
     }
 
     void append_node(Node node) {
@@ -147,12 +183,38 @@ public:
         nodes ~= node;
     }
 
-    void set_params(string[] params) {
+    void set_params(Tuple!(string, string)[] params) {
         this.params = params;
     }
 
     void set_prototype(bool prototype) {
         this.prototype = prototype;
+    }
+
+    void set_type(string type) {
+        this.type = type;
+    }
+
+    override string codegen() {
+        string result = type ~ " " ~ name ~ "(";
+
+        foreach (i; 0 .. params.length) {
+            result ~= params[i][0] ~ " " ~ params[i][1];
+            if (i != params.length - 1) {
+                result ~= ", ";
+            }
+        }
+        result ~= ")";
+
+        if (!prototype) {
+            result ~= "{\n";
+            // do block here
+            result ~= "\n}\n";
+        } else {
+            result ~= ";";
+        }
+
+        return result;
     }
 
     override string to_string() {
@@ -161,7 +223,7 @@ public:
             res ~= " [prototype] ";
         }
         foreach (i; 0 .. params.length) {
-            res ~= " " ~ params[i];
+            res ~= params[i][0] ~ " " ~ params[i][1];
         }
         return res;
     }
@@ -187,6 +249,18 @@ public:
     this(string name, Expr[] arguments) {
         this.name = name;
         this.arguments = arguments;
+    }
+
+    override string codegen() {
+        string res = name ~ "(";
+        foreach (i; 0 .. arguments.length) {
+            res ~= " " ~ arguments[i].to_string();
+            if (i != arguments.length - 1) {
+                res ~= ",";
+            }
+        }
+        res ~= ")\n";
+        return res;
     }
 
     override string to_string() {

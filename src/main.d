@@ -3,6 +3,7 @@ import std.string;
 
 import lexer;
 import parser;
+import codegen;
 
 string read_file(string file_name) {
     string source_file = "";
@@ -25,6 +26,9 @@ int main(string[] args) {
 
     auto parser = new Parser(lexer.get_tokens());
     parser.start();
+
+    auto gen = new Codegen(parser.get_ast());
+    gen.start();
 
     return 0;
 }

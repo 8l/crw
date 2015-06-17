@@ -6,6 +6,11 @@ import std.string;
 
 import ast;
 
+enum {
+    LOG_C,
+    COMPILE_C
+}
+
 // fuck off C
 extern (C) int system(const char *str);
 
@@ -32,14 +37,22 @@ public:
         file.close();
     }
 
-    void start() {
+    void start(int flag) {
         foreach (i; 0 .. nodes.length) {
             source_code ~= nodes[i].codegen();
         }
 
-        writeln(source_code);
-
-        //make_file();
-        //compile();
+        switch (flag) {
+            case LOG_C:
+                writeln(source_code);
+                break;
+            case COMPILE_C:
+                make_file();
+                compile();
+                break;
+            default:
+                writeln("error: unknown option ", flag);
+                break;
+        }
     }
 }

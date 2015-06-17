@@ -1,5 +1,19 @@
 # crw
-a tiny little compiler I'm writing to learn D...
+a tiny little compiler I'm writing to learn D. It compiles to CC, so you'll need a C compiler like gcc or clang to use crw.
+
+## building
+
+    $ git clone https://www.github.com/felixangell/crw
+    $ cd crw
+    $ make
+
+To compile your code to an executable:
+
+    $ ./main build tests/test.crw
+
+To log the generated code:
+
+    $ ./main debug tests/test.crw
 
 ## example
 here's an example...

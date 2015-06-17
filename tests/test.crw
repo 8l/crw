@@ -15,7 +15,8 @@ func add -> int a, int b, int c {
 }
 
 func print -> int a {
-
+    int x = 10;
+    int y = add 1, 2, 3;
 }
 
 func no_args {

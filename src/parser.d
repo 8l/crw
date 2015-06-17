@@ -230,6 +230,11 @@ public:
             return literal;
         }
 
+        Call c = parse_call();
+        if (c !is null) {
+            return c;
+        }
+
         return null;        
     }
 

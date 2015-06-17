@@ -38,7 +38,7 @@ public:
     }
 
     override string codegen() {
-        return rhand.to_string() ~ " " ~ op;
+        return rhand.codegen() ~ " " ~ op;
     }
 
     override string to_string() {
@@ -150,7 +150,10 @@ public:
         if (value !is null) {
             res ~= " = " ~ value.codegen();
         }
-        res ~= ";\n";
+        if (!cast(Call) value) {
+            res ~= ";";
+        }
+        res ~= "\n";
         return res;
     }
 
@@ -271,7 +274,7 @@ public:
     }
 }
 
-class Call : Node {
+class Call : Expr {
 private:
     Attribute attrib;
     string name;
@@ -291,12 +294,12 @@ public:
     override string codegen() {
         string res = name ~ "(";
         foreach (i; 0 .. arguments.length) {
-            res ~= " " ~ arguments[i].codegen();
+            res ~= arguments[i].codegen();
             if (i != arguments.length - 1) {
-                res ~= ",";
+                res ~= ", ";
             }
         }
-        res ~= ")\n";
+        res ~= ");\n";
         return res;
     }
 

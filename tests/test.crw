@@ -1,5 +1,4 @@
-int test;
-int another = test;
+int test = 10;
 int swag = 5 + 5;
 
 type new_type ->

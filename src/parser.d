@@ -88,6 +88,40 @@ public:
         return null;
     }
 
+    Type parse_type() {
+        if (match_content("type", 0)) {
+            consume();
+
+            if (match_type(TOKEN_IDENTIFIER, 0)) {
+                string name = consume().get_content();
+
+                if (name !in types) {
+                    types[name] = true;
+                } else {
+                    writeln("error: type ", name, " already exists");
+                }
+
+                if (match_content("-", 0) && match_content(">", 1)) {
+                    consume(); // eat -
+                    consume(); // eat >
+
+                    Tuple!(string, string)[] members = parse_parameters();
+
+                    if (match_content(";", 0)) {
+                        consume();
+                        if (members.length == 0) {
+                            writeln("warning: empty type, please remove the arrow operator");
+                        }
+                    }
+
+                    return new Type(name, members);
+                }
+            }
+        }
+
+        return null;
+    }
+
     Tuple!(string, string)[] parse_parameters() {
         Tuple!(string, string)[] params;
 
@@ -269,6 +303,11 @@ public:
         Var v = parse_var();
         if (v !is null) {
             return v;
+        }
+
+        Type t = parse_type();
+        if (t !is null) {
+            return t;
         }
 
         Func f = parse_func();

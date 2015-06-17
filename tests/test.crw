@@ -2,6 +2,15 @@ int test;
 int another = test;
 int swag = 5 + 5;
 
+type new_type ->
+    int a,
+    double b,
+    float c;
+
+func do_stuff [new_type] {
+    
+}
+
 func add -> int a, int b, int c {
     ret a + b + c;
 }

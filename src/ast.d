@@ -163,6 +163,38 @@ public:
     }
 }
 
+class Type : Node {
+private:
+    string name;
+    Tuple!(string, string)[] members;
+
+public:
+    this(string name, Tuple!(string, string)[] members) {
+        this.name = name;
+        this.members = members;
+    }
+
+    string get_name() {
+        return name;
+    }
+
+    Tuple!(string, string)[] get_members() {
+        return members;
+    }
+
+    override string codegen() {
+        string result = "typedef struct {\n";
+        foreach (i; 0 .. members.length) {
+            result ~= members[i][0] ~ " " ~ members[i][1];
+            if (i != members.length - 1) {
+                result ~= ";\n";
+            }
+        }
+        result ~= "\n} " ~ name ~ ";\n";
+        return result;
+    }
+}
+
 class Func : Node {
 private:
     string name;

@@ -148,19 +148,9 @@ public:
     }
 
     Call parse_call() {
-        if (peek(0).get_content() in functions
-            || (match_content("<", 1) && match_content("-", 2)) && peek(3).get_content() in functions) {
+        if (peek(0).get_content() in functions) {
 
-            string name = null;
-            string pass = null;
-            if (match_content("<", 1) && match_content("-", 2)) {
-                pass = consume().get_content();
-                consume(); // eat <
-                consume(); // eat -
-                name = consume().get_content();
-            } else {
-                name = consume().get_content();
-            }
+            string name = consume().get_content();
 
             Expr[] args;
             while (true) {
@@ -177,7 +167,6 @@ public:
             }
 
             Call c = new Call(name, args);
-            c.set_pass(pass);
 
             if (match_content(";", 0)) {
                 consume();

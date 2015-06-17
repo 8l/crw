@@ -279,16 +279,11 @@ private:
     Attribute attrib;
     string name;
     Expr[] arguments;
-    string pass;
 
 public:
     this(string name, Expr[] arguments) {
         this.name = name;
         this.arguments = arguments;
-    }
-
-    void set_pass(string pass) {
-        this.pass = pass;
     }
 
     override string codegen() {
@@ -308,7 +303,6 @@ public:
         foreach (i; 0 .. arguments.length) {
             res ~= " " ~ arguments[i].to_string();
         }
-        res ~= " -> " ~ pass;
         return res;
     }
 }

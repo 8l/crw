@@ -4,23 +4,27 @@ a tiny little compiler I'm writing to learn D...
 ## example
 here's an example...
 
-    int test;
-    int another = test;
-    int swag = 5 + 5;
+    int variable;
+    int another_variable = 1;
 
-    func add -> int a, int b, int c {
-        ret a + b + c;
+    type make_our_custom_type ->
+        int a,
+        double c,
+        float z,
+        str e;
+
+    func this_returns_void {
+
     }
 
-    func print -> int a {
-        #foreign printf "%d\n", a;
+    func this_returns_an_int [int] {
+
     }
 
-    func no_args {
-        print "no args";
+    func this_takes_two_params_and_returns_void -> int a, int b {
+
     }
 
-    func main [int] {
-        add 1, 2, 3 -> print;
-        no_args _;
+    func this_takes_one_param_and_returns_int -> int z [int] {
+
     }

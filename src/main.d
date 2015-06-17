@@ -21,7 +21,9 @@ int main(string[] args) {
         return -1;
     }
 
-    auto lexer = new Lexer(read_file(args[1]));
+    string file_name = args[1];
+
+    auto lexer = new Lexer(read_file(file_name));
     lexer.start();
 
     auto parser = new Parser(lexer.get_tokens());

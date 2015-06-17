@@ -209,7 +209,6 @@ public:
     }
 
     void append_node(Node node) {
-        if (!this.prototype) this.prototype = true;
         nodes ~= node;
     }
 
@@ -238,10 +237,14 @@ public:
 
         if (!prototype) {
             result ~= "{\n";
-            // do block here
+            if (nodes.length > 0) {
+                foreach (i; 0 .. nodes.length) {
+                    result ~= nodes[i].codegen();
+                }
+            }
             result ~= "\n}\n";
         } else {
-            result ~= ";";
+            result ~= ";\n";
         }
 
         return result;
@@ -281,10 +284,14 @@ public:
         this.arguments = arguments;
     }
 
+    void set_pass(string pass) {
+        this.pass = pass;
+    }
+
     override string codegen() {
         string res = name ~ "(";
         foreach (i; 0 .. arguments.length) {
-            res ~= " " ~ arguments[i].to_string();
+            res ~= " " ~ arguments[i].codegen();
             if (i != arguments.length - 1) {
                 res ~= ",";
             }

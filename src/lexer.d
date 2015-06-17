@@ -144,6 +144,11 @@ public:
         while (running) {
             get_next_token();
         }
+
+        foreach (i; 0 .. tokens.length) {
+            write(tokens[i].get_content() ~ ", ");
+        }
+        write("\n");
     }
 
     bool is_digit(char c) {

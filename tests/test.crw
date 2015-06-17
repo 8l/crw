@@ -11,11 +11,11 @@ func do_stuff [new_type] {
 }
 
 func add -> int a, int b, int c {
-    ret a + b + c;
+
 }
 
 func print -> int a {
-    #foreign printf "%d\n", a;
+
 }
 
 func no_args {
@@ -23,6 +23,5 @@ func no_args {
 }
 
 func main [int] {
-    add 1, 2, 3 -> print;
-    no_args _;
+    print <- add 1, 2, 3;
 }

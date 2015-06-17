@@ -37,7 +37,9 @@ public:
             source_code ~= nodes[i].codegen();
         }
 
-        make_file();
-        compile();
+        writeln(source_code);
+
+        //make_file();
+        //compile();
     }
 }

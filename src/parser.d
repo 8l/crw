@@ -12,6 +12,7 @@ private:
     Node[] nodes;
     int[string] precedence;
     bool[string] types;
+    bool[string] functions;
     int position;
 
 public:
@@ -146,6 +147,48 @@ public:
         return params;
     }
 
+    Call parse_call() {
+        if (peek(0).get_content() in functions
+            || (match_content("<", 1) && match_content("-", 2)) && peek(3).get_content() in functions) {
+
+            string name = null;
+            string pass = null;
+            if (match_content("<", 1) && match_content("-", 2)) {
+                pass = consume().get_content();
+                consume(); // eat <
+                consume(); // eat -
+                name = consume().get_content();
+            } else {
+                name = consume().get_content();
+            }
+
+            Expr[] args;
+            while (true) {
+                Expr e = parse_expr();
+                if (e !is null) {
+                    args ~= e;
+                }
+
+                if (match_content(",", 0)) {
+                    consume();
+                } else {
+                    break;
+                }
+            }
+
+            Call c = new Call(name, args);
+            c.set_pass(pass);
+
+            if (match_content(";", 0)) {
+                consume();
+            }
+
+            return c;
+        }
+
+        return null;
+    }
+
     Expr parse_expr() {
         Expr expr = parse_primary_expr();
         if (expr is null) {
@@ -241,6 +284,12 @@ public:
             if (match_type(TOKEN_IDENTIFIER, 0)) {
                 string name = consume().get_content();
 
+                if (name in functions) {
+                    writeln("function already defined");
+                } else {
+                    functions[name] = true;
+                }
+
                 Func f = new Func(name);
 
                 if (match_content("-", 0) && match_content(">", 1)) {
@@ -274,13 +323,10 @@ public:
                             break;
                         }
 
-                        // for now just consume it all
-                        consume();
-
-                        //Node n = parse_node();
-                        //if (n !is null) {
-                        //    f.append_node(n);
-                        //}
+                        Node n = parse_node();
+                        if (n !is null) {
+                            f.append_node(n);
+                        }
                     }
                 } 
                 // prototype
@@ -313,6 +359,11 @@ public:
         Func f = parse_func();
         if (f !is null) {
             return f;
+        }
+
+        Call c = parse_call();
+        if (c !is null) {
+            return c;
         }
 
         return null;
@@ -357,11 +408,12 @@ public:
     int match_literal(int offset) {
         int lit = tokens[position + offset].get_type();
         switch (lit) {
-            case LITERAL_CHAR:
-            case LITERAL_INT:
-            case LITERAL_FLOAT:
-            case LITERAL_STRING:
-                return lit;
+            case TOKEN_CHARACTER:
+                return LITERAL_CHAR;
+            case TOKEN_NUMBER:
+                return LITERAL_INT;
+            case TOKEN_STRING:
+                return LITERAL_STRING;
             default:
                 return -1;
         }

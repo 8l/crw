@@ -8,14 +8,12 @@ class Parser {
 private:
     Token[] tokens;
     Node[] nodes;
-    bool running;
     int position;
 
 public:
     this(Token[] tokens) {
         this.tokens = tokens;
         this.position = 0;
-        this.running = true;
     }
 
     Var parse_var() {
@@ -25,10 +23,10 @@ public:
             if (match_type(TOKEN_IDENTIFIER, 0)) {
                 string name = consume().get_content();
 
+                Var v = new Var(name);
+
                 if (match_content("=", 1)) {
                     writeln("todo var assignment!");
-                } else {
-                    writeln("var node with name ", name);
                 }
 
                 if (match_content(";", 0)) {
@@ -37,7 +35,7 @@ public:
                     writeln("error: missing semi-colon at the end of variable definition for `", name, "`");
                 }
 
-                return new Var(name);
+                return v;
             }
         }
 
@@ -70,26 +68,45 @@ public:
             if (match_type(TOKEN_IDENTIFIER, 0)) {
                 string name = consume().get_content();
 
+                Func f = new Func(name);
+
                 if (match_content("-", 0) && match_content(">", 1)) {
                     consume(); // eat -
                     consume(); // eat >
 
                     string[] params = parse_parameters();
-                    foreach (i; 0 .. params.length) {
-                        writeln("param: ", params[i]);
-                    }
-
-                    // block
-                    if (match_content("{", 0)) {
-
-                    } 
-                    // prototype
-                    else {
-
-                    }
-                } else {
-                    writeln("no parameters");
+                    f.set_params(params);
                 }
+
+                // block
+                if (match_content("{", 0)) {
+                    consume();
+
+                    while (true) {
+                        if (match_content("}", 0)) {
+                            consume();
+                            break;
+                        }
+
+                        // for now just consume it all
+                        consume();
+
+                        //Node n = parse_node();
+                        //if (n !is null) {
+                        //    f.append_node(n);
+                        //}
+                    }
+                } 
+                // prototype
+                else if (match_content(";", 0)) {
+                    f.set_prototype(true);
+                }
+                // ??
+                else {
+                    writeln("error: illegal token in function signature `", name, "`");
+                }
+
+                return f;
             }
         }
 
@@ -123,11 +140,14 @@ public:
     }
 
     void start() {
-        while (running) {
+        while (position < tokens.length) {
             Node n = parse_node();
             if (n !is null) {
                 nodes ~= n;
             }
+        }
+        foreach (i; 0 .. nodes.length) {
+            writeln(nodes[i].to_string());
         }
     }
 }

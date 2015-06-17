@@ -144,10 +144,6 @@ public:
         while (running) {
             get_next_token();
         }
-
-        foreach (token; 0 .. tokens.length) {
-            writeln(tokens[token].to_string());
-        }
     }
 
     bool is_digit(char c) {

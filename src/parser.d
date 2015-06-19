@@ -417,6 +417,8 @@ public:
                 return LITERAL_INT;
             case TOKEN_STRING:
                 return LITERAL_STRING;
+            case TOKEN_IDENTIFIER:
+                return LITERAL_REFERENCE;
             default:
                 return -1;
         }

@@ -73,7 +73,14 @@ public:
     }
 
     void generate_var(Var var) {
+        stab[var.get_name()] = var;
 
+        set_writer(SOURCE_FILE);
+        write_line(var.get_type() ~ " " ~ var.get_mangled_name());
+        if (var.get_value() !is null) {
+            write_line(" = ");
+            generate_expr(var.get_value());
+        }
     }
 
     void generate_unary_expr(UnaryExpr unary) {
@@ -141,6 +148,7 @@ public:
             generate_func(x);
         } else if (auto x = cast(Var) node) {
             generate_var(x);
+            write_line(";\n");
         } else if (auto x = cast(Call) node) {
             generate_call(x);
         } else if (auto x = cast(Type) node) {

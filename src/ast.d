@@ -2,7 +2,8 @@ enum {
     LITERAL_STRING,
     LITERAL_CHAR,
     LITERAL_INT,
-    LITERAL_FLOAT
+    LITERAL_FLOAT,
+    LITERAL_REFERENCE
 }
 
 import std.stdio;
@@ -122,12 +123,26 @@ public:
         this.type = type;
     }
 
+    Expr get_value() {
+        return value;
+    }
+
     void set_value(Expr value) {
         this.value = value;
     }
 
     string get_type() {
         return type;
+    }
+
+    string get_name() {
+        return name;
+    }
+
+    string get_mangled_name() {
+        auto length = name.length;
+        auto result =  "__V_" ~ to!string(length) ~ "_" ~ name ~ "_" ~ type;
+        return result;
     }
 
     override string to_string() {

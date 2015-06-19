@@ -1,5 +1,6 @@
 # crw
-a tiny little compiler I'm writing to learn D. It compiles to CC, so you'll need a C compiler like gcc or clang to use crw.
+a tiny little compiler I'm writing to learn D. It compiles to CC, so you'll need a C compiler like gcc or clang to use crw. Very messy source code, just
+a small side-project...
 
 ## building
 

@@ -36,31 +36,32 @@ public:
         types["void"] = "void";
     }
 
+    void generate_func_proto(Func func) {
+        write_line(func.get_type() ~ " " ~ func.get_mangled_name() ~ "(");
+        foreach (i; 0 .. func.get_params().length) {
+            auto param = func.get_params()[i];
+            write_line(get_type(param[0]) ~ " " ~ param[1]);
+            if (i != func.get_params().length - 1) {
+                write_line(", ");
+            }
+        }
+        write_line(")");
+    }
+
     void generate_func(Func func) {
         // store the function
         stab[func.get_name()] = func;
 
+        // print out to the header file so
+        // functions order doesn't matter
         set_writer(HEADER_FILE);
-        write_line(func.get_type() ~ " " ~ func.get_mangled_name() ~ "(");
-        foreach (i; 0 .. func.get_params().length) {
-            auto param = func.get_params()[i];
-            write_line(get_type(param[0]) ~ " " ~ param[1]);
-            if (i != func.get_params().length - 1) {
-                write_line(", ");
-            }
-        }
-        write_line(");\n");
+        generate_func_proto(func);
+        write_line(";\n");
 
+        // print out the decl to the source
         set_writer(SOURCE_FILE);
-        write_line(func.get_type() ~ " " ~ func.get_mangled_name() ~ "(");
-        foreach (i; 0 .. func.get_params().length) {
-            auto param = func.get_params()[i];
-            write_line(get_type(param[0]) ~ " " ~ param[1]);
-            if (i != func.get_params().length - 1) {
-                write_line(", ");
-            }
-        }
-        write_line(") {\n");
+        generate_func_proto(func);
+        write_line(" {\n");
 
         foreach (i; 0 .. func.get_nodes().length) {
             write_line("\t");
@@ -76,7 +77,7 @@ public:
         stab[var.get_name()] = var;
 
         set_writer(SOURCE_FILE);
-        write_line(var.get_type() ~ " " ~ var.get_mangled_name());
+        write_line(get_type(var.get_type()) ~ " " ~ var.get_mangled_name());
         if (var.get_value() !is null) {
             write_line(" = ");
             generate_expr(var.get_value());
@@ -123,6 +124,9 @@ public:
         write_line(")");
     }
 
+    // this will lookup the type in the type
+    // and return the fancy type with its mangled
+    // name if it's there...
     string get_type(string type) {
         if (type !in types) {
             writeln("shit: ", type, " not defined");

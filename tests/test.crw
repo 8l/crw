@@ -5,12 +5,13 @@ int z = a + b;
 
 type some_type -> int a, double b, float c;
 
+some_type type;
+
 func whatever -> string fmt, string what {
-    
+    type = some_type(3, 2, 4);    
 }
 
 func penis -> int a, int d [void] {
-    
 }
 
 func main [int] {

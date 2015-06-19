@@ -19,6 +19,7 @@ private:
     Node[] nodes;
     int where;
     Node[string] stab;
+    string[string] ctors;
     string[string] types;
 
     string header_file;
@@ -137,7 +138,44 @@ public:
     }
 
     void generate_constructor(Type type) {
+        // store the function
+        ctors[type.get_name()] = type.get_mangled_ctor_name();
 
+        // print out to the header file so
+        // functions order doesn't matter
+        set_writer(HEADER_FILE);
+        write_line(type.get_mangled_name() ~ " *" ~ type.get_mangled_ctor_name() ~ "(");
+        foreach (i; 0 .. type.get_members().length) {
+            auto member = type.get_members()[i];
+            write_line(get_type(member[0]) ~ " " ~ member[1]);
+            if (i != type.get_members().length - 1) {
+                write_line(", ");
+            }
+        }
+        write_line(");\n");
+
+        // print out the decl to the source
+        set_writer(SOURCE_FILE);
+        write_line(type.get_mangled_name() ~ " *" ~ type.get_mangled_ctor_name() ~ "(");
+        foreach (i; 0 .. type.get_members().length) {
+            auto member = type.get_members()[i];
+            write_line(get_type(member[0]) ~ " " ~ member[1]);
+            if (i != type.get_members().length - 1) {
+                write_line(", ");
+            }
+        }
+        write_line(") {\n");
+
+        write_line("\t" ~ type.get_mangled_name() ~ " *self = malloc(sizeof(*self));\n");
+        foreach (i; 0 .. type.get_members().length) {
+            write_line("\t");
+            auto member = type.get_members()[i];
+            write_line("self->" ~ member[1] ~ " = " ~ member[1]);
+            write_line(";\n");
+        }
+        write_line("\treturn self;\n");
+
+        write_line("}\n");
     }
 
     void generate_type(Type type) {
@@ -152,7 +190,7 @@ public:
         }
         write_line("} " ~ type.get_mangled_name() ~ "; \n");
 
-        // generate constructors
+        generate_constructor(type);
     }
 
     void generate_node(Node node) {
@@ -160,7 +198,7 @@ public:
             generate_func(x);
         } else if (auto x = cast(Var) node) {
             generate_var(x);
-            write_line(";\n");
+            write_line("\n");
         } else if (auto x = cast(Call) node) {
             generate_call(x);
         } else if (auto x = cast(Type) node) {

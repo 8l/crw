@@ -2,6 +2,7 @@ module parser;
 
 import std.stdio;
 import std.typecons;
+import std.conv;
 
 import ast;
 import token;
@@ -96,6 +97,13 @@ public:
             if (match_type(TOKEN_IDENTIFIER, 0)) {
                 string name = consume().get_content();
 
+                // store the type as a function constructor, add 
+                // a shit load of mangledness so it's unlikely anyone
+                // would replicate this with an actual function
+                auto type_ctor_mangled = "__T_" ~ to!string(name.length) ~ "_" ~ name ~ "_type_ctor";
+                functions[type_ctor_mangled] = true;
+                writeln("STORED ", type_ctor_mangled);
+
                 if (name !in types) {
                     types[name] = true;
                 } else {
@@ -158,9 +166,17 @@ public:
     }
 
     Call parse_call() {
-        if (peek(0).get_content() in functions) {
+        auto tok = peek(0);
 
+        // mangle everything to see if it matches the constructors
+        // in the stab for ctors
+        auto type_ctor = "__T_" ~ to!string(tok.get_content().length) ~ "_" ~ tok.get_content() ~ "_type_ctor";
+        if (tok.get_content() in functions || type_ctor in functions 
+            || (match_content("-", 1) && match_content(">", 2))) {
             string name = consume().get_content();
+
+            consume();
+            consume();
 
             Expr[] args;
             while (true) {

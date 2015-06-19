@@ -165,6 +165,19 @@ public:
         this.members = members;
     }
 
+    string get_mangled_ctor_name() {
+        auto length = name.length;
+        auto result =  "__SC_" ~ to!string(length) ~ "_" ~ name ~ "_";
+        foreach (i; 0 .. members.length) {
+            auto member = members[i];
+            result ~= member[0] ~ "_" ~ member[1];
+            if (i != members.length - 1) {
+                result ~= "_";
+            }
+        }
+        return result;
+    }
+
     string get_mangled_name() {
         auto length = name.length;
         auto result =  "__S_" ~ to!string(length) ~ "_" ~ name ~ "_";

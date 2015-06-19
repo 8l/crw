@@ -127,10 +127,7 @@ public:
     }
 
     string get_type() {
-        switch (type) {
-            case "string": return "char*";
-            default: return type;
-        }
+        return type;
     }
 
     override string to_string() {
@@ -151,6 +148,19 @@ public:
     this(string name, Tuple!(string, string)[] members) {
         this.name = name;
         this.members = members;
+    }
+
+    string get_mangled_name() {
+        auto length = name.length;
+        auto result =  "__S_" ~ to!string(length) ~ "_" ~ name ~ "_";
+        foreach (i; 0 .. members.length) {
+            auto member = members[i];
+            result ~= member[0] ~ "_" ~ member[1];
+            if (i != members.length - 1) {
+                result ~= "_";
+            }
+        }
+        return result;
     }
 
     string get_name() {
@@ -220,10 +230,7 @@ public:
     }
 
     string get_type() {
-        switch (type) {
-            case "string": return "char*";
-            default: return type;
-        }
+        return type;
     }
 
     override string to_string() {

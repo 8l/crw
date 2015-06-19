@@ -129,7 +129,6 @@ public:
         while (true) {
             if (match_type(TOKEN_IDENTIFIER, 0) && peek(0).get_content() in types) {
                 string type = consume().get_content();
-                if (type == "string") type = "char*";
 
                 if (match_type(TOKEN_IDENTIFIER, 0)) {
                     string name = consume().get_content();

@@ -4,6 +4,10 @@ string y = "asdfasd";
 
 type some_type -> int a, double b, float c;
 
+func whatever -> string fmt, string what {
+    
+}
+
 func penis -> int a, int d [void] {
     
 }

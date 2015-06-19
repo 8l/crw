@@ -3,6 +3,7 @@ module codegen;
 import std.stdio;
 import std.process;
 import std.string;
+import std.conv;
 
 import ast;
 
@@ -18,6 +19,7 @@ private:
     Node[] nodes;
     int where;
     Node[string] stab;
+    string[string] types;
 
     string header_file;
     string source_file;
@@ -25,6 +27,13 @@ private:
 public:
     this(Node[] nodes) {
         this.nodes = nodes;
+
+        types["int"] = "int";
+        types["string"] = "char*";
+        types["double"] = "double";
+        types["float"] = "float";
+        types["byte"] = "char";
+        types["void"] = "void";
     }
 
     void generate_func(Func func) {
@@ -35,7 +44,7 @@ public:
         write_line(func.get_type() ~ " " ~ func.get_mangled_name() ~ "(");
         foreach (i; 0 .. func.get_params().length) {
             auto param = func.get_params()[i];
-            write_line(param[0] ~ " " ~ param[1]);
+            write_line(get_type(param[0]) ~ " " ~ param[1]);
             if (i != func.get_params().length - 1) {
                 write_line(", ");
             }
@@ -46,7 +55,7 @@ public:
         write_line(func.get_type() ~ " " ~ func.get_mangled_name() ~ "(");
         foreach (i; 0 .. func.get_params().length) {
             auto param = func.get_params()[i];
-            write_line(param[0] ~ " " ~ param[1]);
+            write_line(get_type(param[0]) ~ " " ~ param[1]);
             if (i != func.get_params().length - 1) {
                 write_line(", ");
             }
@@ -107,6 +116,26 @@ public:
         write_line(")");
     }
 
+    string get_type(string type) {
+        if (type !in types) {
+            writeln("shit: ", type, " not defined");
+        }
+        return types[type];
+    }
+
+    void generate_type(Type type) {
+        stab[type.get_name()] = type;
+        types[type.get_name()] = type.get_mangled_name();
+
+        set_writer(HEADER_FILE);
+        write_line("typedef struct {\n");
+        foreach (i; 0 .. type.get_members().length) {
+            auto member = type.get_members()[i];
+            write_line("\t" ~ get_type(member[0]) ~ " " ~ member[1] ~ ";\n");
+        }
+        write_line("} " ~ type.get_mangled_name() ~ "; \n");
+    }
+
     void generate_node(Node node) {
         if (auto x = cast(Func) node) {
             generate_func(x);
@@ -114,6 +143,8 @@ public:
             generate_var(x);
         } else if (auto x = cast(Call) node) {
             generate_call(x);
+        } else if (auto x = cast(Type) node) {
+            generate_type(x);
         }
     }
 

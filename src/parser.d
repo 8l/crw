@@ -194,6 +194,10 @@ public:
             return null;
         }
 
+        if (peek(0).get_content() == ";") {
+            return expr;
+        }
+
         return parse_binary_op(0, expr);
     }
 
@@ -219,6 +223,11 @@ public:
     }
 
     Expr parse_primary_expr() {
+        Call c = parse_call();
+        if (c !is null) {
+            return c;
+        }
+
         UnaryExpr unary = parse_unary();
         if (unary !is null) {
             return unary;
@@ -227,11 +236,6 @@ public:
         LiteralExpr literal = parse_literal();
         if (literal !is null) {
             return literal;
-        }
-
-        Call c = parse_call();
-        if (c !is null) {
-            return c;
         }
 
         return null;        

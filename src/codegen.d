@@ -106,6 +106,8 @@ public:
             generate_binary_expr(x);
         } else if (auto x = cast(LiteralExpr) expr) {
             generate_literal_expr(x);
+        } else if (auto x = cast(Call) expr) {
+            generate_call(cast(Call) expr);
         }
     }
 
@@ -134,6 +136,10 @@ public:
         return types[type];
     }
 
+    void generate_constructor(Type type) {
+
+    }
+
     void generate_type(Type type) {
         stab[type.get_name()] = type;
         types[type.get_name()] = type.get_mangled_name();
@@ -145,6 +151,8 @@ public:
             write_line("\t" ~ get_type(member[0]) ~ " " ~ member[1] ~ ";\n");
         }
         write_line("} " ~ type.get_mangled_name() ~ "; \n");
+
+        // generate constructors
     }
 
     void generate_node(Node node) {

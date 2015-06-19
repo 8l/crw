@@ -6,15 +6,12 @@ enum {
 }
 
 import std.stdio;
+import std.conv;
 import std.typecons;
 
 class Node {
 public:
     string to_string() {
-        return "";
-    }
-
-    string codegen() {
         return "";
     }
 }
@@ -35,10 +32,6 @@ public:
 
     string get_op() {
         return op;
-    }
-
-    override string codegen() {
-        return rhand.codegen() ~ " " ~ op;
     }
 
     override string to_string() {
@@ -71,10 +64,6 @@ public:
         return rhand;
     }
 
-    override string codegen() {
-        return lhand.codegen() ~ " " ~ op ~ " " ~ rhand.codegen();
-    }
-
     override string to_string() {
         return lhand.to_string() ~ " " ~ op ~ " " ~ rhand.to_string();
     }
@@ -101,16 +90,12 @@ public:
 
     string get_type_str() {
         switch (type) {
-            case LITERAL_STRING: return "string";
+            case LITERAL_STRING: return "char*";
             case LITERAL_CHAR: return "char";
             case LITERAL_FLOAT: return "float";
             case LITERAL_INT: return "int";
             default: return "??";
         }
-    }
-
-    override string codegen() {
-        return value;
     }
 
     override string to_string() {
@@ -120,10 +105,6 @@ public:
 
 class Expr : Node {
 public:
-    override string codegen() {
-        return "";
-    }
-
     override string to_string() {
         return "";
     }
@@ -145,16 +126,11 @@ public:
         this.value = value;
     }
 
-    override string codegen() {
-        string res = type ~ " " ~ name;
-        if (value !is null) {
-            res ~= " = " ~ value.codegen();
+    string get_type() {
+        switch (type) {
+            case "string": return "char*";
+            default: return type;
         }
-        if (!cast(Call) value) {
-            res ~= ";";
-        }
-        res ~= "\n";
-        return res;
     }
 
     override string to_string() {
@@ -184,16 +160,6 @@ public:
     Tuple!(string, string)[] get_members() {
         return members;
     }
-
-    override string codegen() {
-        string result = "typedef struct {\n";
-        foreach (i; 0 .. members.length) {
-            result ~= members[i][0] ~ " " ~ members[i][1];
-            result ~= ";\n";
-        }
-        result ~= "\n} " ~ name ~ ";\n";
-        return result;
-    }
 }
 
 class Func : Node {
@@ -215,8 +181,34 @@ public:
         nodes ~= node;
     }
 
+    string get_mangled_name() {
+        auto length = name.length;
+        auto result =  "__F_" ~ to!string(length) ~ "_" ~ name ~ "_";
+        foreach (i; 0 .. params.length) {
+            auto param = params[i];
+            result ~= param[0] ~ "_" ~ param[1];
+            if (i != params.length - 1) {
+                result ~= "_";
+            }
+        }
+        result ~= "_" ~ get_type();
+        return result;
+    }
+
+    string get_name() {
+        return name;
+    }
+
+    Tuple!(string, string)[] get_params() {
+        return params;
+    }
+
     void set_params(Tuple!(string, string)[] params) {
         this.params = params;
+    }
+
+    Node[] get_nodes() {
+        return nodes;
     }
 
     void set_prototype(bool prototype) {
@@ -227,30 +219,11 @@ public:
         this.type = type;
     }
 
-    override string codegen() {
-        string result = type ~ " " ~ name ~ "(";
-
-        foreach (i; 0 .. params.length) {
-            result ~= params[i][0] ~ " " ~ params[i][1];
-            if (i != params.length - 1) {
-                result ~= ", ";
-            }
+    string get_type() {
+        switch (type) {
+            case "string": return "char*";
+            default: return type;
         }
-        result ~= ")";
-
-        if (!prototype) {
-            result ~= "{\n";
-            if (nodes.length > 0) {
-                foreach (i; 0 .. nodes.length) {
-                    result ~= nodes[i].codegen();
-                }
-            }
-            result ~= "\n}\n";
-        } else {
-            result ~= ";\n";
-        }
-
-        return result;
     }
 
     override string to_string() {
@@ -286,16 +259,12 @@ public:
         this.arguments = arguments;
     }
 
-    override string codegen() {
-        string res = name ~ "(";
-        foreach (i; 0 .. arguments.length) {
-            res ~= arguments[i].codegen();
-            if (i != arguments.length - 1) {
-                res ~= ", ";
-            }
-        }
-        res ~= ");\n";
-        return res;
+    string get_name() {
+        return name;
+    }
+
+    Expr[] get_arguments() {
+        return arguments;
     }
 
     override string to_string() {

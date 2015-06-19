@@ -1,28 +1,13 @@
-int test = 10;
-int swag = 5 + 5;
+int a = 10;
+int b = 5 + 5;
+string y = "asdfasd";
 
-type new_type ->
-    int a,
-    double b,
-    float c;
+type some_type -> int a, double b, float c;
 
-func do_stuff [new_type] {
+func penis -> int a, int d [void] {
     
 }
 
-func add -> int a, int b, int c {
-
-}
-
-func print -> int a {
-    int x = 10;
-    int y = add 1, 2, 3;
-}
-
-func no_args {
-    print "no args";
-}
-
 func main [int] {
-    add 1, 2, 3;
+    penis 10, 15;
 }

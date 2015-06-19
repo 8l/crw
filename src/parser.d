@@ -129,6 +129,7 @@ public:
         while (true) {
             if (match_type(TOKEN_IDENTIFIER, 0) && peek(0).get_content() in types) {
                 string type = consume().get_content();
+                if (type == "string") type = "char*";
 
                 if (match_type(TOKEN_IDENTIFIER, 0)) {
                     string name = consume().get_content();
@@ -140,6 +141,16 @@ public:
                     } else {
                         break;
                     }
+                }
+            }
+            else if (match_content("_", 0)) {
+                consume();
+                params ~= tuple("", "...");
+
+                if (match_content(",", 0)) {
+                    consume();
+                } else {
+                    break;
                 }
             }
         }
@@ -325,7 +336,9 @@ public:
                 } 
                 // prototype
                 else if (match_content(";", 0)) {
+                    consume();
                     f.set_prototype(true);
+                    return f;
                 }
                 // ??
                 else {
@@ -389,9 +402,6 @@ public:
             if (n !is null) {
                 nodes ~= n;
             }
-        }
-        foreach (i; 0 .. nodes.length) {
-            writeln(nodes[i].to_string());
         }
     }
 
